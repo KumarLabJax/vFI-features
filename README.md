@@ -93,4 +93,33 @@ Example code for command line:
 python /home/user/rearingmetrics.py --input-root-dir /home/user/data --output-root-dir /home/user/results --video-file-list /home/user/mousefiles.csv
 ```
 
+## Elipse Fit
 
+ellipsefit.py will produce the medain/mean widths and lengths.
+It does not require pose files but it requires npy files with the width and length of the ellipse fit at each frame. Contact us for more information.
+It requires the following packages:
+
+```
+os
+pandas
+argparse
+csv
+re
+nupmy
+statistics
+```
+
+Running it requires 3 arguments:
+```
+--input-root-dir: the root directory for input files
+--output-root-dir: the root directory for output files (defaults to same as input dir)
+--video-file-list: the csv list of videos to process (default is all AVI files in the input dir). Pose files of the videos should be in the same directory as the videos
+```
+
+
+
+Example code for command line:
+
+```
+python /home/user/ellispefit.py --input-root-dir /home/user/data --output-root-dir /home/user/results --video-file-list /home/user/mousefiles.csv
+```
