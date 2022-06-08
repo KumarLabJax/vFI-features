@@ -7,6 +7,13 @@ There are 5 python scripts to run the different vFI features
 Developed in Python 3.6 and Python 3.7
 Many of these scripts require pose files generated from the Kumar Lab's mouse pose estimation neural network. Contact us for more information. 
 
+## Generating Pose, Gait, Ellipse fit
+*[Pose](https://github.com/KumarLabJax/deep-hrnet-mouse)
+
+*[Gait](https://github.com/KumarLabJax/gaitanalysis)
+
+*[Ellipse fit](https://github.com/KumarLabJax/MouseTracking)
+
 ## Rear Paw Widths
 
 rearpawwidths.py will produce the median and mean rear paw width features.
