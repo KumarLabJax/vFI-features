@@ -126,8 +126,9 @@ def perframe(pointsr, out_filename_base):
         C=extractpoints(pointsr.iloc[2,i])
         
         dAC.append(distance(A,C))
-        dB.append(distB(A,B,C))
-        aABC.append(angle(A,B,C))
+        if distB(A,B,C)<40:
+            dB.append(distB(A,B,C))
+            aABC.append(angle(A,B,C))
         
     maxdAC= max(dAC)
     rdAC=[i/maxdAC for i in dAC]
@@ -308,8 +309,10 @@ def main():
     allpervideos=pd.concat(pervidfeats)
     allpervideos['NetworkFilename']=netfiles
     allpervideos.set_index('NetworkFilename')
-    #allpervideos.to_csv(output_root_dir+'/flexdexraw.csv')
+    allpervideos.to_csv(output_root_dir+'/flexdexraw.csv')
 
+    print(allpervideos)
+    print(allpervideos.shape)
     dAC=allpervideos.iloc[0::3, 1:]
     dB=allpervideos.iloc[1::3, 1:]
     aABC=allpervideos.iloc[2::3, 1:]

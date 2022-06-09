@@ -84,7 +84,7 @@ def extractpoints2(point):
     return(numbers)
 
 def checkforrear(points, max_contour):
-    
+    print('checking for rear')
     frames=[]
     xs=[]
     ys=[]
@@ -94,10 +94,11 @@ def checkforrear(points, max_contour):
        
         x=int(extractpoints(points.iloc[0,i])[1])
         y=int(extractpoints(points.iloc[0,i])[0])
+        #print(x,y)
         xs.append(x)
         ys.append(y)
         ff.append(fr[i])
-        
+        #print(max_contour)
         dist=cv2.pointPolygonTest(max_contour, (x,y), True)
         
         if dist<(-5):
@@ -188,8 +189,8 @@ def contour(video):
 # Find contours/lines
     contours, hierarchy = cv2.findContours(thresh,cv2.RETR_CCOMP,cv2.CHAIN_APPROX_NONE)
 # Plot them (for later)
-#img_cont = np.zeros(gray.shape, np.uint8)
-#img_cont = cv2.drawContours(img_cont, contours, -1, (255,0,0), 1)
+    img_cont = np.zeros(gray.shape, np.uint8)
+    img_cont = cv2.drawContours(img_cont, contours, -1, (255,0,0), 1)
 # Find the largest area
     max_area = -1
     max_contour = None
@@ -197,13 +198,36 @@ def contour(video):
         if cv2.contourArea(ind_cont) > max_area:
             max_area=cv2.contourArea(ind_cont)
             max_contour=ind_cont
-
-    if max_area>np.power(raw_frame.shape[0]/2, 2):
+    print(max_contour)
+    print(max_area)
+    print(np.power(raw_frame.shape[0]/2, 2))
+    if max_area>=np.power(raw_frame.shape[0]/2, 2):
         print('contour good')
         return(max_contour)
 
     else:
         return('hi')
+
+def cornerpoints(input_root_dir,yam):
+    print(input_root_dir+'/'+yam)
+    with open(input_root_dir+'/'+yam,'r') as file:
+        
+        corners=yaml.full_load(file).get('corner_coords')
+        print('got')
+        
+        xs=corners.get('xs')
+        ys=corners.get('ys')
+    
+    xmin=(xs[0]+xs[2])/2
+    xmax=(xs[1]+xs[3])/2
+
+    ymin=(ys[0]+ys[1])/2
+    ymax=(ys[2]+ys[3])/2
+    corn=[[[int(xs[0]),int(ys[0])]],[[int(xs[1]),int(ys[1])]],[[int(xs[2]),int(ys[2])]],[[int(xs[3]),int(ys[3])]]]
+    
+    coords=[xmin,xmax,ymin,ymax]
+    print(coords,corn)
+    return(coords,corn)   
 
                      
 def main():
@@ -241,6 +265,7 @@ def main():
     vids=[]
     input_file_paths = []
     corners=[]
+
     with open(args.video_file_list) as video_file_list_file:
         video_file_list_reader = csv.reader(video_file_list_file, delimiter='\t')
         
@@ -249,14 +274,14 @@ def main():
             if row and row[0]:
                 # skip header row
                 if i > 0 or row[0] != 'NetworkFilename':
-                    vids.append(row[0])
-                    corners.append(re.sub('.avi','_corners.yaml',row[0]))
-                    row[0]=re.sub('.avi','_pose_est_v2.h5', row[0])
                     
+                    pose=re.sub('.avi','_pose_est_v2.h5', row[0])
                     
                     pose_filepath = os.path.join(input_root_dir, row[0])
                     if os.path.isfile(pose_filepath):
-                        input_file_paths.append(row[0])
+                        input_file_paths.append(pose)
+                        vids.append(row[0])
+                        corners.append(re.sub('.avi','_corners_v2.yaml',row[0]))
                     else:
                         print('missing file:', pose_filepath)
     
@@ -267,7 +292,7 @@ def main():
     #allframes=[]
     badcon=[]
     
-    
+    print(len(vids),len(input_file_paths),len(corners))
     for i,in_rel_file in enumerate(input_file_paths):
         print('i:', i)
         in_file = os.path.join(input_root_dir, in_rel_file) 
@@ -275,25 +300,46 @@ def main():
         netsname=re.sub('_pose_est_v2.h5','.avi',in_rel_file)
         netfilesub=re.sub('_pose_est_v2.h5','.avi',in_rel_file)
         pose_name, _ = os.path.splitext(pose_filename)
-        
-        
-        try:
-        # if i>0:
+        print(netfilesub)
+        print(corners[i])
+        print(vids[i])
+        #try:
+        if i>-1:
+            coords=contour(input_root_dir+'/'+vids[i])
+            
+            # try:
+            #     coords,corn=cornerpoints(input_root_dir,corners[i])
+            # except:
+            #     print('no yaml')
+            #     coords=contour(vid)
+                
+            # if type(coords)!=str:
+            #     corn=[coords[0][0],coords[1][0],coords[2][0],coords[3][0]]
             netfiles.append(netsname)
-            vid=os.path.join(input_root_dir,netsname)
-            max_contour=contour(vid)
+            # vid=os.path.join(input_root_dir,netsname)
+            # max_contour=contour(vid)
             #drw_contour=max_contour+4
-            if type(max_contour)==str:
+
+            
+            if type(coords)==str:
                 print('contour bad')
                 print(in_rel_file)
+                thisrow=['na','na']
+                pervidfeats.append(thisrow)
+                startframe.append(['na'])
+                startframe.append(['na'])
+                netfiles2.append(netsname)
+                netfiles2.append(netsname)
                 badcon.append(netsname)
 
 
             else:
                 
                 point,confs=extractdata(in_file)
+                print('extracted')
                 points=(removeconfs(point, confs))
-                frames,xs,ys,ff,dist=checkforrear(points, max_contour)
+                print('cleaned')
+                frames,xs,ys,ff,dist=checkforrear(points, coords)
                 rearlist=rearbouts(frames)
                 numbouts=len(rearlist)
 #                    #print(numbouts)
@@ -305,14 +351,14 @@ def main():
                 netfiles2.append(netsname)
                 netfiles2.append(netsname)
         
-        except:
-             print(in_rel_file,' failed')
-             thisrow=['na','na']
-             pervidfeats.append(thisrow)
-             startframe.append(['na'])
-             startframe.append(['na'])
-             netfiles2.append(netsname)
-             netfiles2.append(netsname)
+        # except:
+        #      print(in_rel_file,' failed')
+        #      thisrow=['na','na']
+        #      pervidfeats.append(thisrow)
+        #      startframe.append(['na'])
+        #      startframe.append(['na'])
+        #      netfiles2.append(netsname)
+        #      netfiles2.append(netsname)
 
 
 # #       
@@ -320,22 +366,22 @@ def main():
     allpervideos['NetworkFilename']=netfiles
     allpervideos.set_index('NetworkFilename').to_csv(output_root_dir+'/rearingmetrics.csv')
 
-    framos=pd.DataFrame.from_records(data=startframe)
-    framos['NetworkFilename']=netfiles2
-    framos.set_index('NetworkFilename')
-    frames=framos.set_index('NetworkFilename').iloc[0::2,:]
-    newdata=[]
-    netfiles=frames.index.values.tolist()
-    for i in range(frames.shape[0]):
-        startframe=frames.iloc[i,0]
-        bins=makebins(startframe)
-        popbins=databins(bins,frames.iloc[i,3:].tolist())
-        newdata.append(popbins)
-##        
-    binframes=pd.DataFrame.from_records(data=newdata)
-    binframes['NetworkFilename']=netfiles
-    binframes.set_index('NetworkFilename')
-    binframes.to_csv(output_root_dir+'/rearingtimebinmetrics.csv')
+#     framos=pd.DataFrame.from_records(data=startframe)
+#     framos['NetworkFilename']=netfiles2
+#     framos.set_index('NetworkFilename')
+#     frames=framos.set_index('NetworkFilename').iloc[0::2,:]
+#     newdata=[]
+#     netfiles=frames.index.values.tolist()
+#     for i in range(frames.shape[0]):
+#         startframe=frames.iloc[i,0]
+#         bins=makebins(startframe)
+#         popbins=databins(bins,frames.iloc[i,3:].tolist())
+#         newdata.append(popbins)
+# ##        
+#     binframes=pd.DataFrame.from_records(data=newdata)
+#     binframes['NetworkFilename']=netfiles
+#     binframes.set_index('NetworkFilename')
+#     binframes.to_csv(output_root_dir+'/rearingtimebinmetrics.csv')
 
 
  

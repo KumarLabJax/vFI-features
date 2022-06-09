@@ -127,7 +127,7 @@ def main():
     
     maxlen=[]
     mico=[]
-    with open(input_root_dir+'/rearpawsave.csv', 'a') as outfile:
+    with open(output_root_dir+'/rearpawsave.csv', 'a') as outfile:
         writer = csv.writer(outfile)
         for i,in_rel_file in enumerate(input_file_paths):
             print('i:', i)

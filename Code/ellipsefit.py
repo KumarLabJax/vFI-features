@@ -51,11 +51,8 @@ def makenewdf(df,output):
 
 def extractdata(in_file):
     ellfit=np.load(in_file)
-    length=[]
-    width=[]
-    for i in range(len(ellfit)):
-        width.append(ellfit[i][2])
-        length.append(ellfit[i][3])
+    width=[u[2] for u in ellfit]   
+    length=[u[3] for u in ellfit]
         
     return(width,length)
 
