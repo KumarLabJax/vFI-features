@@ -146,7 +146,7 @@ def boutcheck(rearlist):
 def makebins(startframe):
     bins=[]
     bins.append(startframe)
-    newbin=startframe
+    newbin=int(startframe)
     for i in range(0,8):
         newbin=newbin+9000
         bins.append(newbin)
@@ -303,15 +303,15 @@ def main():
         print(netfilesub)
         print(corners[i])
         print(vids[i])
-        #try:
-        if i>-1:
-            coords=contour(input_root_dir+'/'+vids[i])
+        try:
+        #if i>-1:
             
+            coords=contour(input_root_dir+'/'+vids[i])
             # try:
             #     coords,corn=cornerpoints(input_root_dir,corners[i])
             # except:
             #     print('no yaml')
-            #     coords=contour(vid)
+            #     coords=contour(input_root_dir+'/'+vids[i])
                 
             # if type(coords)!=str:
             #     corn=[coords[0][0],coords[1][0],coords[2][0],coords[3][0]]
@@ -348,40 +348,51 @@ def main():
                 pervidfeats.append(thisrow)
                 startframe.append(startframes)
                 startframe.append(duration)
-                netfiles2.append(netsname)
-                netfiles2.append(netsname)
+                netfiles2.append(netsname+'_start')
+                netfiles2.append(netsname+'_len')
         
-        # except:
-        #      print(in_rel_file,' failed')
-        #      thisrow=['na','na']
-        #      pervidfeats.append(thisrow)
-        #      startframe.append(['na'])
-        #      startframe.append(['na'])
-        #      netfiles2.append(netsname)
-        #      netfiles2.append(netsname)
+        except Exception as e:
+             print(in_rel_file,' failed')
+             print(e)
+             thisrow=['na','na']
+             pervidfeats.append(thisrow)
+             startframe.append(['na'])
+             startframe.append(['na'])
+             netfiles2.append(netsname+'_start')
+             netfiles2.append(netsname+'_len')
 
 
 # #       
+
+
     allpervideos=pd.DataFrame.from_records(data=pervidfeats,columns=['rear_count', 'avg_bout_len'])
     allpervideos['NetworkFilename']=netfiles
     allpervideos.set_index('NetworkFilename').to_csv(output_root_dir+'/rearingmetrics.csv')
 
-#     framos=pd.DataFrame.from_records(data=startframe)
-#     framos['NetworkFilename']=netfiles2
-#     framos.set_index('NetworkFilename')
-#     frames=framos.set_index('NetworkFilename').iloc[0::2,:]
-#     newdata=[]
-#     netfiles=frames.index.values.tolist()
-#     for i in range(frames.shape[0]):
-#         startframe=frames.iloc[i,0]
-#         bins=makebins(startframe)
-#         popbins=databins(bins,frames.iloc[i,3:].tolist())
-#         newdata.append(popbins)
-# ##        
-#     binframes=pd.DataFrame.from_records(data=newdata)
-#     binframes['NetworkFilename']=netfiles
-#     binframes.set_index('NetworkFilename')
-#     binframes.to_csv(output_root_dir+'/rearingtimebinmetrics.csv')
+    framos=pd.DataFrame.from_records(data=startframe)
+    framos['NetworkFilename']=netfiles2
+    framos.set_index('NetworkFilename')
+    framos.to_csv(output_root_dir+'/rearing_bouts.csv')
+
+#    frames=framos.set_index('NetworkFilename').iloc[0::2,:]
+#    print(frames)
+#    frames.to_csv(output_root_dir+'/rearingbouts_2.csv')
+#    newdata=[]
+#    netfiles=frames.index.values.tolist()
+#    for i in range(frames.shape[0]):
+#        startframe=frames.iloc[i,0]
+#        
+#        bins=makebins(startframe)
+#        popbins=databins(bins,frames.iloc[i,3:].tolist())
+#        newdata.append(popbins)
+        
+# # ##        
+#    binframes=pd.DataFrame.from_records(data=newdata)
+#    binframes['NetworkFilename']=netfiles
+#    binframes.set_index('NetworkFilename')
+#    binframes.to_csv(output_root_dir+'/rearingtimebinmetrics.csv')
+
+    
 
 
  

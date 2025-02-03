@@ -126,9 +126,8 @@ def perframe(pointsr, out_filename_base):
         C=extractpoints(pointsr.iloc[2,i])
         
         dAC.append(distance(A,C))
-        if distB(A,B,C)<40:
-            dB.append(distB(A,B,C))
-            aABC.append(angle(A,B,C))
+        dB.append(distB(A,B,C))
+        aABC.append(angle(A,B,C))
         
     maxdAC= max(dAC)
     rdAC=[i/maxdAC for i in dAC]
@@ -245,9 +244,12 @@ def main():
     
     if output_root_dir is None:
         output_root_dir = input_root_dir
+
+    print('HELLO')
     
     input_file_paths = []
-    with open(args.video_file_list, newline='') as video_file_list_file:
+    with open(args.video_file_list) as video_file_list_file:
+        print(video_file_list_file)
         video_file_list_reader = csv.reader(video_file_list_file, delimiter='\t')
         
         for i, row in enumerate(video_file_list_reader):
@@ -291,12 +293,13 @@ def main():
             
                 netfiles.append(netfilesub)
                 m=m+1
-        except:
+        except Exception as e:
+            print(e)
             print(in_rel_file)
             cols=['mean','standard deviation','min','max','median']
-            a=[0,0,0,0,0]
-            b=[0,0,0,0,0]
-            c=[0,0,0,0,0]
+            a=[np.nan,np.nan,np.nan,np.nan,np.nan]
+            b=[np.nan,np.nan,np.nan,np.nan,np.nan]
+            c=[np.nan,np.nan,np.nan,np.nan,np.nan]
             d=[a,b,c]
             dex=[str(in_rel_file)+'1',str(in_rel_file)+'2',str(in_rel_file)+'3']
             newp=pd.DataFrame.from_records(data=d, columns=cols,index=dex)
@@ -311,16 +314,14 @@ def main():
     allpervideos.set_index('NetworkFilename')
     allpervideos.to_csv(output_root_dir+'/flexdexraw.csv')
 
-    print(allpervideos)
-    print(allpervideos.shape)
-    dAC=allpervideos.iloc[0::3, 1:]
-    dB=allpervideos.iloc[1::3, 1:]
-    aABC=allpervideos.iloc[2::3, 1:]
+    dAC=allpervideos.iloc[0::3, :]
+    dB=allpervideos.iloc[1::3, :]
+    aABC=allpervideos.iloc[2::3, :]
     these=[dAC,dB,aABC]
     text=['dAC','dB','aABC']
     
     for y in range(len(these)):
-        these[y].columns=[text[y]+'_mean',text[y]+'_stdev',text[y]+'_min',text[y]+'_max',text[y]+'_median']
+        these[y].columns=[text[y]+'_mean',text[y]+'_stdev',text[y]+'_min',text[y]+'_max',text[y]+'_median','NetworkFilename']
     
     dAC.to_csv(output_root_dir+"/dAC.csv")
     dB.to_csv(output_root_dir+"/dB.csv")
