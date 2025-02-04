@@ -244,8 +244,6 @@ def main():
     
     if output_root_dir is None:
         output_root_dir = input_root_dir
-
-    print('HELLO')
     
     input_file_paths = []
     with open(args.video_file_list) as video_file_list_file:
